@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: telegram_bot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot:
+    build: .
+    depends_on:
+      - db
+    environment:
+      BOT_TOKEN: 7833699011:AAGzI6ZCagyyLMHBjabzS6uYz9PSB0JiMFE
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: telegram_bot
+      OPENAI_API_KEY: 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
+
+volumes:
+  pgdata:
