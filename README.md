@@ -98,24 +98,32 @@ git clone https://github.com/Belks53/se-toolkit-hackathon.git
 cd se-toolkit-hackathon
 ```
 
-1. Configure environment variables in `docker-compose.yml`:
+2. Create and configure environment variables file:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file and add your credentials:
 
 | Variable | Description |
 |----------|-------------|
 | `BOT_TOKEN` | Telegram bot token (from @BotFather) |
+| `OPENAI_API_KEY` | OpenRouter API key (from https://openrouter.ai/) |
 | `DB_HOST` | PostgreSQL host (use `db` for Docker Compose) |
-| `DB_USER` | Database username |
-| `DB_PASSWORD` | Database password |
-| `DB_NAME` | Database name |
-| `OPENAI_API_KEY` | OpenRouter API key |
+| `DB_USER` | Database username (default: `postgres`) |
+| `DB_PASSWORD` | Database password (default: `password`) |
+| `DB_NAME` | Database name (default: `telegram_bot`) |
 
-1. Start the application:
+> ⚠️ **Important:** The `.env` file contains sensitive data and is automatically excluded from Git. Never commit it to the repository!
+
+3. Start the application:
 
 ```bash
 docker-compose up --build -d
 ```
 
-1. Open your bot in Telegram and press **/start**.
+4. Open your bot in Telegram and press **/start**.
 
 ### Stopping the Application
 

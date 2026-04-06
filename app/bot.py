@@ -451,21 +451,21 @@ async def back_from_tz(cb: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "lang_ru")
 async def set_lang_ru(cb: CallbackQuery, state: FSMContext):
     await db.set_language(cb.from_user.id, "ru")
-    await cb.answer(get("ru", "lang_set_ru"))
     await state.clear()
     text = make_menu_text("ru")
-    await cb.message.edit_text(text, parse_mode="HTML")
-    await cb.answer()
+    kb = make_persistent_kb("ru")
+    await cb.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    await cb.answer(get("ru", "lang_set_ru"), show_alert=True)
 
 
 @dp.callback_query(F.data == "lang_en")
 async def set_lang_en(cb: CallbackQuery, state: FSMContext):
     await db.set_language(cb.from_user.id, "en")
-    await cb.answer(get("en", "lang_set_en"))
     await state.clear()
     text = make_menu_text("en")
-    await cb.message.edit_text(text, parse_mode="HTML")
-    await cb.answer()
+    kb = make_persistent_kb("en")
+    await cb.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    await cb.answer(get("en", "lang_set_en"), show_alert=True)
 
 
 @dp.callback_query(Form.start_hour, F.data == "back")
@@ -508,7 +508,7 @@ async def main():
     logger.info("DB connected")
     await start_scheduler(bot, db)
     logger.info("Scheduler started")
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, drop_pending_updates=True)
     logger.info("Bot polling started")
 
 
