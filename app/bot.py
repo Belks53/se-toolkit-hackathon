@@ -446,15 +446,15 @@ async def tz_select(msg: Message):
 @dp.callback_query(F.data.startswith("tz_"))
 async def set_tz(cb: CallbackQuery, state: FSMContext):
     tz = cb.data.split("_", 1)[1]
-    await db.set_timezone(cb.from_user.id, tz)
 
     # Check if this is first launch
     current_state = await state.get_state()
 
     if current_state == FirstLaunch.select_tz.state:
-        # First launch completed - create user and notification job
+        # First launch completed - create user FIRST, then set timezone
         lang = await get_lang(cb.from_user.id)
-        await db.add_user(cb.from_user.id)
+        await db.add_user(cb.from_user.id)  # Create user first!
+        await db.set_timezone(cb.from_user.id, tz)  # Then set timezone
         
         # Create notification job with selected timezone
         notif_time = await db.get_notification_time(cb.from_user.id)
@@ -484,6 +484,7 @@ async def set_tz(cb: CallbackQuery, state: FSMContext):
         await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
     else:
         lang = await get_lang(cb.from_user.id)
+        await db.set_timezone(cb.from_user.id, tz)
         await cb.answer(get(lang, "tz_set").format(tz=tz))
         await state.clear()
         text = make_menu_text(lang)
@@ -505,6 +506,8 @@ async def set_lang_ru(cb: CallbackQuery, state: FSMContext):
     # Check if this is first launch
     current_state = await state.get_state()
     
+    # Create user first if not exists
+    await db.add_user(cb.from_user.id)
     await db.set_language(cb.from_user.id, "ru")
     
     if current_state == FirstLaunch.select_lang.state:
@@ -524,6 +527,8 @@ async def set_lang_en(cb: CallbackQuery, state: FSMContext):
     # Check if this is first launch
     current_state = await state.get_state()
     
+    # Create user first if not exists
+    await db.add_user(cb.from_user.id)
     await db.set_language(cb.from_user.id, "en")
     
     if current_state == FirstLaunch.select_lang.state:
