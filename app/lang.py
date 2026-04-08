@@ -42,6 +42,9 @@ T = {
         "tz_current": "Текущий: {tz}",
         "tz_set": "✅ Часовой пояс установлен: {tz}",
         "tz_btn": "🌍 Часовой пояс",
+        "first_launch_welcome": "👋 Добро пожаловать в <b>Time Manager</b>!\n\nПрежде чем начать, выбери язык интерфейса:",
+        "first_launch_tz": "Отлично! Теперь выбери свой часовой пояс:",
+        "first_launch_setup_done": "✅ Настройки сохранены!\n\nТеперь ты можешь пользоваться ботом. Нажми /start для начала.",
     },
     "en": {
         "menu_title": "⏰ <b>Time Manager</b>",
@@ -86,8 +89,173 @@ T = {
         "tz_current": "Current: {tz}",
         "tz_set": "✅ Timezone set to: {tz}",
         "tz_btn": "🌍 Timezone",
+        "first_launch_welcome": "👋 Welcome to <b>Time Manager</b>!\n\nBefore we start, please choose your interface language:",
+        "first_launch_tz": "Great! Now choose your timezone:",
+        "first_launch_setup_done": "✅ Settings saved!\n\nNow you can use the bot. Press /start to begin.",
     }
 }
 
 def get(user_lang, key):
     return T.get(user_lang, T["ru"]).get(key, T["ru"].get(key, key))
+
+import random
+
+FALLBACK_MORNING_RU = [
+    "🌅 Доброе утро! Начни день с зарядки — это бодрит лучше кофе!",
+    "☀️ Утро — лучшее время для пробежки. Свежий воздух зарядит энергией!",
+    "🧘‍♂️ Утром отлично подходит для медитации. 10 минут тишины зададут тон всему дню!",
+    "📚 Посвяти утро чтению — даже 15 минут расширят кругозор!",
+    "🎵 Включи любимую музыку и потанцуй — отличный способ проснуться!",
+    "🍳 Приготовь вкусный завтрак — правильное начало дня важно!",
+    "✍️ Утром хорошо писать в дневник или планировать день — мысли станут яснее!",
+    "🚶‍♂️ Утренняя прогулка поможет проснуться и настроиться на день!",
+    "🎨 Попробуй порисовать — творчество с утра вдохновляет!",
+    "💪 Сделай утреннюю тренировку — тело скажет спасибо!",
+    "🧹 Утренняя уборка — порядок дома, порядок в голове!",
+    "📝 Выучи 10 новых слов на иностранном языке — утро для этого идеально!",
+    "🎯 Утром хорошо ставить цели на день — фокус и продуктивность!",
+    "🥤 Приготовь свежий смузи — витамины и энергия на весь день!",
+    "🧠 Реши головоломку или кроссворд — разминка для мозга с утра!",
+]
+
+FALLBACK_AFTERNOON_RU = [
+    "🌞 День — время активности! Попробуй новый вид спорта!",
+    "💼 Послеобеденное время идеально для работы над проектом!",
+    "🚴‍♂️ Прогулка на велосипеде — отличный способ провести день!",
+    "🎸 Попробуй освоить музыкальный инструмент — день для творчества!",
+    "🏃‍♂️ Сходи на пробежку в парк — свежий воздух и движение!",
+    "📖 Читай книгу — послеобеденное время для погружения в знания!",
+    "🎬 Посмотри документальный фильм — узнай что-то новое!",
+    "🧑‍🍳 Приготовь новое блюдо — кулинария это творчество!",
+    "🤝 Встреться с другом — общение заряжает позитивом!",
+    "🏋️‍♂️ Сходи в тренажерный зал — день для силы и энергии!",
+    "📸 Попробуй фотографию — лови моменты и развивай взгляд!",
+    "🌿 Проведи время на природе — растения и свежий воздух восстанавливают!",
+    "🎲 Поиграй в настольные игры — весело и развивает мышление!",
+    "📝 Напиши пост в блог или статью — делись знаниями с миром!",
+    "🔧 Займись рукоделием или почини что-то — практика важна!",
+]
+
+FALLBACK_EVENING_RU = [
+    "🌆 Вечер — время расслабления. Спокойная прогулка поможет уснуть!",
+    "🛁 Тёплая ванна с солью — идеальный вечерний ритуал!",
+    "📺 Посмотри хороший фильм — отдых после напряжённого дня!",
+    "🎵 Послушай спокойную музыку — расслабься и отдохни!",
+    "🧘‍♀️ Вечерняя медитация поможет снять стресс и подготовиться ко сну!",
+    "📚 Чтение перед сном — классика для спокойного вечера!",
+    "🍵 Выпей травяной чай с мёдом — уют и тепло вечера!",
+    "✍️ Вечером хорошо писать дневник — подведи итоги дня!",
+    "🎨 Рисование или раскраски — творческий вечерний отдых!",
+    "🧩 Собери пазл — спокойное занятие для вечера!",
+    "💆‍♂️ Сделай самомассаж — тело расслабится и отдохнёт!",
+    "🌟 Спланируй завтрашний день — вечер для организации!",
+    "🎮 Поиграй в спокойную игру — время для развлечения!",
+    "📝 Поучись чему-то новому онлайн — вечер для саморазвития!",
+    "🤗 Позвони близким — общение с семьёй согревает душу!",
+]
+
+FALLBACK_NIGHT_RU = [
+    "🌙 Поздний вечер — время тишины. Отдохни и наберись сил!",
+    "⭐ Посмотри на звёзды — ночное небо вдохновляет!",
+    "📖 Читай спокойную книгу — время для глубоких мыслей!",
+    "🎵 Включи тихую музыку — пусть ночь будет спокойной!",
+    "🧘‍♂️ Глубокая медитация перед сном — путь к внутреннему покою!",
+    "🌌 Подумай о хорошем, что было сегодня — благодарность перед сном!",
+    "💤 Подготовка ко сну важна — выключи экраны и расслабься!",
+    "📝 Запиши мысли в дневник — освободи голову перед сном!",
+    "🌿 Чай с ромашкой поможет уснуть — натуральный релаксант!",
+    "🎨 Вечернее рисование — спокойное творчество перед сном!",
+    "🕯 Зажги свечи — создай уютную атмосферу вечера!",
+    "🧠 Решай спокойные головоломки — мягкая нагрузка для ума!",
+    "💭 Помечтай о будущем — ночь время для фантазий!",
+    "📱 Отложи телефон за час до сна — пусть отдых будет полным!",
+    "🌙 Ночная тишина — лучшее время для самоанализа!",
+]
+
+FALLBACK_MORNING_EN = [
+    "🌅 Good morning! Start your day with a workout — it energizes better than coffee!",
+    "☀️ Morning is the best time for a run. Fresh air will charge you with energy!",
+    "🧘‍♂️ Morning is perfect for meditation. 10 minutes of silence set the tone for the day!",
+    "📚 Dedicate your morning to reading — even 15 minutes broaden your horizons!",
+    "🎵 Play your favorite music and dance — a great way to wake up!",
+    "🍳 Cook a tasty breakfast — a proper start to the day matters!",
+    "✍️ Morning is good for journaling or planning the day — thoughts become clearer!",
+    "🚶‍♂️ A morning walk helps you wake up and tune in for the day!",
+    "🎨 Try drawing — creativity in the morning is inspiring!",
+    "💪 Do a morning workout — your body will thank you!",
+    "🧹 Morning cleaning — order at home, order in your head!",
+    "📝 Learn 10 new words in a foreign language — morning is ideal for this!",
+    "🎯 Morning is great for setting daily goals — focus and productivity!",
+    "🥤 Make a fresh smoothie — vitamins and energy for the whole day!",
+    "🧠 Solve a puzzle or crossword — a warm-up for the brain in the morning!",
+]
+
+FALLBACK_AFTERNOON_EN = [
+    "🌞 Afternoon is the time for action! Try a new sport!",
+    "💼 Afternoon is ideal for working on a project!",
+    "🚴‍♂️ A bike ride — a great way to spend the afternoon!",
+    "🎸 Try mastering a musical instrument — afternoon for creativity!",
+    "🏃‍♂️ Go for a run in the park — fresh air and movement!",
+    "📖 Read a book — afternoon is time for deep dive into knowledge!",
+    "🎬 Watch a documentary — learn something new!",
+    "🧑‍🍳 Cook a new dish — cooking is creativity!",
+    "🤝 Meet a friend — socializing charges you with positivity!",
+    "🏋️‍♂️ Go to the gym — a day for strength and energy!",
+    "📸 Try photography — capture moments and develop your vision!",
+    "🌿 Spend time in nature — plants and fresh air restore!",
+    "🎲 Play board games — fun and develops thinking!",
+    "📝 Write a blog post or article — share your knowledge with the world!",
+    "🔧 Do crafts or fix something — practice is important!",
+]
+
+FALLBACK_EVENING_EN = [
+    "🌆 Evening is time for relaxation. A calm walk helps you sleep!",
+    "🛁 A warm bath with salt — the perfect evening ritual!",
+    "📺 Watch a good movie — rest after a hard day!",
+    "🎵 Listen to calm music — relax and unwind!",
+    "🧘‍♀️ Evening meditation helps relieve stress and prepare for sleep!",
+    "📚 Reading before bed — a classic for a calm evening!",
+    "🍵 Drink herbal tea with honey — coziness and warmth of the evening!",
+    "✍️ Evening is good for journaling — sum up the day!",
+    "🎨 Drawing or coloring — creative evening relaxation!",
+    "🧩 Assemble a puzzle — a calm activity for the evening!",
+    "💆‍♂️ Do self-massage — your body will relax and rest!",
+    "🌟 Plan tomorrow — evening for organization!",
+    "🎮 Play a calm game — time for entertainment!",
+    "📝 Learn something new online — evening for self-development!",
+    "🤗 Call your loved ones — family communication warms the soul!",
+]
+
+FALLBACK_NIGHT_EN = [
+    "🌙 Late evening is time for silence. Rest and gather strength!",
+    "⭐ Look at the stars — the night sky is inspiring!",
+    "📖 Read a calm book — time for deep thoughts!",
+    "🎵 Play quiet music — let the night be peaceful!",
+    "🧘‍♂️ Deep meditation before sleep — a path to inner peace!",
+    "🌌 Think about the good things today — gratitude before sleep!",
+    "💤 Preparing for sleep is important — turn off screens and relax!",
+    "📝 Write thoughts in a journal — clear your head before sleep!",
+    "🌿 Chamomile tea helps you sleep — a natural relaxant!",
+    "🎨 Evening drawing — calm creativity before sleep!",
+    "🕯 Light candles — create a cozy evening atmosphere!",
+    "🧠 Solve calm puzzles — gentle mental load!",
+    "💭 Dream about the future — night is time for fantasies!",
+    "📱 Put away your phone an hour before sleep — let rest be complete!",
+    "🌙 Night silence is the best time for self-reflection!",
+]
+
+def get_fallback_messages(period, lang="ru"):
+    """Get 15 random fallback messages for a time period"""
+    period_map = {
+        "morning": (FALLBACK_MORNING_RU, FALLBACK_MORNING_EN),
+        "afternoon": (FALLBACK_AFTERNOON_RU, FALLBACK_AFTERNOON_EN),
+        "evening": (FALLBACK_EVENING_RU, FALLBACK_EVENING_EN),
+        "night": (FALLBACK_NIGHT_RU, FALLBACK_NIGHT_EN),
+    }
+    
+    if period not in period_map:
+        period = "afternoon"
+    
+    ru_msgs, en_msgs = period_map[period]
+    msgs = ru_msgs if lang == "ru" else en_msgs
+    return random.choice(msgs)

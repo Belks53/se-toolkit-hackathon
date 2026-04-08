@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, time
 from llm import suggest_activities
-from lang import get
+from lang import get, get_fallback_messages
 import logging
 from pytz import utc
 
@@ -52,8 +52,19 @@ async def notify_user(user_id, notif_time, bot, db):
         text += f"\n💡 {ideas}\n"
     except Exception as e:
         logger.error(f"LLM error: {e}")
-        # Still send notification, just without ideas
-        text += f"\n{get(lang, 'no_suggestions')}\n"
+        # Use fallback messages based on time of day
+        current_hour = datetime.now(user_tz).hour
+        if 5 <= current_hour < 12:
+            period = "morning"
+        elif 12 <= current_hour < 17:
+            period = "afternoon"
+        elif 17 <= current_hour < 22:
+            period = "evening"
+        else:
+            period = "night"
+        
+        fallback_msg = get_fallback_messages(period, lang)
+        text += f"\n💡 {fallback_msg}\n"
 
     await bot.send_message(user_id, text, parse_mode="HTML")
     logger.info(f"Notification sent to user {user_id}")

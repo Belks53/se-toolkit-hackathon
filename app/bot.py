@@ -83,6 +83,11 @@ class Form(StatesGroup):
     notification = State()
 
 
+class FirstLaunch(StatesGroup):
+    select_lang = State()
+    select_tz = State()
+
+
 async def get_lang(user_id):
     lang = await db.get_language(user_id)
     return lang or "ru"
@@ -107,6 +112,23 @@ async def answer_menu(msg, text, kb=None):
 @dp.message(F.text == "/start")
 async def start(msg: Message, state: FSMContext = None):
     logger.info(f"/start from user {msg.from_user.id}")
+    
+    # Check if user exists in DB
+    user_lang = await db.get_language(msg.from_user.id)
+    user_tz = await db.get_timezone(msg.from_user.id)
+    
+    # If user has default values, show first launch flow
+    if user_lang == "ru" and user_tz == "UTC":
+        # Check if user actually exists in DB
+        async with db.pool.acquire() as conn:
+            exists = await conn.fetchval("SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)", msg.from_user.id)
+        
+        if not exists:
+            # First launch - show language selection
+            await state.set_state(FirstLaunch.select_lang)
+            await msg.answer(get("ru", "first_launch_welcome"), reply_markup=lang_kb(), parse_mode="HTML")
+            return
+    
     await send_menu(msg, state)
 
 
@@ -431,11 +453,26 @@ async def tz_select(msg: Message):
 async def set_tz(cb: CallbackQuery, state: FSMContext):
     tz = cb.data.split("_", 1)[1]
     await db.set_timezone(cb.from_user.id, tz)
-    lang = await get_lang(cb.from_user.id)
-    await cb.answer(get(lang, "tz_set").format(tz=tz))
-    await state.clear()
-    text = make_menu_text(lang)
-    await cb.message.edit_text(text, parse_mode="HTML")
+    
+    # Check if this is first launch
+    current_state = await state.get_state()
+    
+    if current_state == FirstLaunch.select_tz.state:
+        # First launch completed
+        lang = await get_lang(cb.from_user.id)
+        await state.clear()
+        await cb.answer(get(lang, "tz_set").format(tz=tz))
+        await cb.message.answer(get(lang, "first_launch_setup_done"), parse_mode="HTML")
+        # Show main menu
+        text = make_menu_text(lang)
+        kb = make_persistent_kb(lang)
+        await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
+    else:
+        lang = await get_lang(cb.from_user.id)
+        await cb.answer(get(lang, "tz_set").format(tz=tz))
+        await state.clear()
+        text = make_menu_text(lang)
+        await cb.message.edit_text(text, parse_mode="HTML")
     await cb.answer()
 
 
@@ -450,22 +487,40 @@ async def back_from_tz(cb: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "lang_ru")
 async def set_lang_ru(cb: CallbackQuery, state: FSMContext):
+    # Check if this is first launch
+    current_state = await state.get_state()
+    
     await db.set_language(cb.from_user.id, "ru")
-    await state.clear()
-    text = make_menu_text("ru")
-    kb = make_persistent_kb("ru")
-    await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
-    await cb.answer(get("ru", "lang_set_ru"), show_alert=True)
+    
+    if current_state == FirstLaunch.select_lang.state:
+        # First launch - proceed to timezone selection
+        await state.set_state(FirstLaunch.select_tz)
+        await cb.message.answer(get("ru", "first_launch_tz"), reply_markup=tz_kb("ru"), parse_mode="HTML")
+    else:
+        await state.clear()
+        text = make_menu_text("ru")
+        kb = make_persistent_kb("ru")
+        await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
+        await cb.answer(get("ru", "lang_set_ru"), show_alert=True)
 
 
 @dp.callback_query(F.data == "lang_en")
 async def set_lang_en(cb: CallbackQuery, state: FSMContext):
+    # Check if this is first launch
+    current_state = await state.get_state()
+    
     await db.set_language(cb.from_user.id, "en")
-    await state.clear()
-    text = make_menu_text("en")
-    kb = make_persistent_kb("en")
-    await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
-    await cb.answer(get("en", "lang_set_en"), show_alert=True)
+    
+    if current_state == FirstLaunch.select_lang.state:
+        # First launch - proceed to timezone selection
+        await state.set_state(FirstLaunch.select_tz)
+        await cb.message.answer(get("en", "first_launch_tz"), reply_markup=tz_kb("en"), parse_mode="HTML")
+    else:
+        await state.clear()
+        text = make_menu_text("en")
+        kb = make_persistent_kb("en")
+        await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
+        await cb.answer(get("en", "lang_set_en"), show_alert=True)
 
 
 @dp.callback_query(Form.start_hour, F.data == "back")
