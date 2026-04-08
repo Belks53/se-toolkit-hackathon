@@ -454,7 +454,7 @@ async def set_lang_ru(cb: CallbackQuery, state: FSMContext):
     await state.clear()
     text = make_menu_text("ru")
     kb = make_persistent_kb("ru")
-    await cb.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
     await cb.answer(get("ru", "lang_set_ru"), show_alert=True)
 
 
@@ -464,7 +464,7 @@ async def set_lang_en(cb: CallbackQuery, state: FSMContext):
     await state.clear()
     text = make_menu_text("en")
     kb = make_persistent_kb("en")
-    await cb.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+    await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
     await cb.answer(get("en", "lang_set_en"), show_alert=True)
 
 

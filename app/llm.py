@@ -13,20 +13,56 @@ client = OpenAI(
 async def suggest_activities(free_slots, lang="ru"):
     prompts = {
         "ru": f"""
+Ты — помощник, который помогает планировать свободное время.
+
 Свободное время пользователя: {free_slots}
 
 Предложи 5 РАЗНЫХ идей из разных категорий: спорт, учёба, творчество, уборка, прогулка, хобби, общение.
 Учитывай время суток — утром активное, днём рабочее, вечером спокойное.
 НЕ повторяй одно и то же. НЕ предлагай только отдых и медитацию.
-Отвечай на русском. Каждую идею с новой строки, кратко.
+
+Оформи ответ КРАСИВО в следующем формате:
+
+🎯 *Идея 1*
+📂 Категория: [категория]
+⏰ Время: [подходящее время]
+📝 Описание: [краткое описание, 1-2 предложения]
+
+🎯 *Идея 2*
+📂 Категория: [категория]
+⏰ Время: [подходящее время]
+📝 Описание: [краткое описание, 1-2 предложения]
+
+...и так далее для всех 5 идей.
+
+В конце добавь короткую мотивирующую фразу.
+Отвечай на русском языке.
 """,
         "en": f"""
+You are an assistant that helps plan free time.
+
 User's free time: {free_slots}
 
 Suggest 5 DIVERSE ideas from different categories: sport, study, creativity, chores, walk, hobby, social.
 Consider time of day — morning = active, afternoon = productive, evening = calm.
 Do NOT repeat. Do NOT only suggest rest and meditation.
-Respond in English. Each idea on a new line, briefly.
+
+Format the response BEAUTIFULLY as follows:
+
+🎯 *Idea 1*
+📂 Category: [category]
+⏰ Time: [suitable time]
+📝 Description: [brief description, 1-2 sentences]
+
+🎯 *Idea 2*
+📂 Category: [category]
+⏰ Time: [suitable time]
+📝 Description: [brief description, 1-2 sentences]
+
+...and so on for all 5 ideas.
+
+At the end, add a short motivational phrase.
+Respond in English.
 """,
     }
     prompt = prompts.get(lang, prompts["ru"])
