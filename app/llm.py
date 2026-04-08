@@ -69,8 +69,16 @@ Respond in English.
 
     res = await asyncio.to_thread(
         client.chat.completions.create,
-        model="qwen/qwen3-next-80b-a3b-instruct:free",
+        model="meta-llama/llama-3.1-8b-instruct:free",
         messages=[{"role":"user","content":prompt}],
         temperature=0.9
     )
-    return res.choices[0].message.content
+    
+    if not res.choices or res.choices[0] is None:
+        raise ValueError("Empty response from LLM")
+    
+    content = res.choices[0].message.content
+    if not content:
+        raise ValueError("No content in LLM response")
+    
+    return content
