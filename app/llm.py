@@ -69,7 +69,7 @@ Respond in English.
 
     res = await asyncio.to_thread(
         client.chat.completions.create,
-        model="qwen/qwen3.6-plus:free",
+        model="qwen/qwen3-235b-a22b:free",
         messages=[{"role":"user","content":prompt}],
         temperature=0.9
     )
