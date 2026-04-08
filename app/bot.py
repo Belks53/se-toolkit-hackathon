@@ -114,20 +114,14 @@ async def start(msg: Message, state: FSMContext = None):
     logger.info(f"/start from user {msg.from_user.id}")
     
     # Check if user exists in DB
-    user_lang = await db.get_language(msg.from_user.id)
-    user_tz = await db.get_timezone(msg.from_user.id)
+    async with db.pool.acquire() as conn:
+        exists = await conn.fetchval("SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)", msg.from_user.id)
     
-    # If user has default values, show first launch flow
-    if user_lang == "ru" and user_tz == "UTC":
-        # Check if user actually exists in DB
-        async with db.pool.acquire() as conn:
-            exists = await conn.fetchval("SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)", msg.from_user.id)
-        
-        if not exists:
-            # First launch - show language selection
-            await state.set_state(FirstLaunch.select_lang)
-            await msg.answer(get("ru", "first_launch_welcome"), reply_markup=lang_kb(), parse_mode="HTML")
-            return
+    if not exists:
+        # First launch - show language selection
+        await state.set_state(FirstLaunch.select_lang)
+        await msg.answer(get("ru", "first_launch_welcome"), reply_markup=lang_kb(), parse_mode="HTML")
+        return
     
     await send_menu(msg, state)
 
@@ -453,13 +447,34 @@ async def tz_select(msg: Message):
 async def set_tz(cb: CallbackQuery, state: FSMContext):
     tz = cb.data.split("_", 1)[1]
     await db.set_timezone(cb.from_user.id, tz)
-    
+
     # Check if this is first launch
     current_state = await state.get_state()
-    
+
     if current_state == FirstLaunch.select_tz.state:
-        # First launch completed
+        # First launch completed - create user and notification job
         lang = await get_lang(cb.from_user.id)
+        await db.add_user(cb.from_user.id)
+        
+        # Create notification job with selected timezone
+        notif_time = await db.get_notification_time(cb.from_user.id)
+        if notif_time and scheduler.sch:
+            job_id = f"notif_{cb.from_user.id}"
+            try:
+                scheduler.sch.remove_job(job_id)
+            except:
+                pass
+            try:
+                import pytz
+                tz_obj = pytz.timezone(tz)
+            except:
+                tz_obj = pytz.utc
+            scheduler.sch.add_job(notify_user, "cron", hour=notif_time.hour, minute=notif_time.minute,
+                        timezone=tz_obj,
+                        args=[cb.from_user.id, notif_time, bot, db],
+                        id=job_id, replace_existing=True)
+            logger.info(f"Created notification job for user {cb.from_user.id} at {notif_time.hour:02d}:{notif_time.minute:02d} ({tz})")
+        
         await state.clear()
         await cb.answer(get(lang, "tz_set").format(tz=tz))
         await cb.message.answer(get(lang, "first_launch_setup_done"), parse_mode="HTML")
