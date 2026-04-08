@@ -33,13 +33,18 @@ async def notify_user(user_id, notif_time, bot, db):
     logger.info(f"Sending notification to user {user_id}")
     lang = await db.get_language(user_id)
     tz_name = await db.get_timezone(user_id)
+    logger.info(f"User {user_id} timezone: {tz_name}")
     try:
         import pytz
         user_tz = pytz.timezone(tz_name)
     except:
         user_tz = pytz.utc
-    today = datetime.now(user_tz).weekday()
+    now = datetime.now(user_tz)
+    logger.info(f"User {user_id} current time in their timezone: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+    today = now.weekday()
+    logger.info(f"User {user_id} current day (0=Mon, 6=Sun): {today}")
     busy=await db.get_busy_for_day(user_id,today)
+    logger.info(f"User {user_id} busy slots for day {today}: {len(busy)}")
     free=find_free(busy)
 
     text = get(lang, "free_time") + "\n"
@@ -53,7 +58,7 @@ async def notify_user(user_id, notif_time, bot, db):
     except Exception as e:
         logger.error(f"LLM error: {e}")
         # Use fallback messages based on time of day
-        current_hour = datetime.now(user_tz).hour
+        current_hour = now.hour
         if 5 <= current_hour < 12:
             period = "morning"
         elif 12 <= current_hour < 17:
@@ -62,7 +67,8 @@ async def notify_user(user_id, notif_time, bot, db):
             period = "evening"
         else:
             period = "night"
-        
+        logger.info(f"Using fallback message for period: {period}")
+
         fallback_msg = get_fallback_messages(period, lang)
         text += f"\n💡 {fallback_msg}\n"
 
