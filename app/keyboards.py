@@ -326,3 +326,7 @@ def tz_kb(lang="ru"):
         kb.append(row)
     kb.append([InlineKeyboardButton(text=back_text, callback_data="back_from_tz")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
+
+
+# Backward-compatible aliases for bot.py
+days_map = DAYS_MAP_RU
