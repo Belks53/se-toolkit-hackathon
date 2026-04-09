@@ -17,11 +17,18 @@ RETRY_DELAY_BASE = 2  # seconds
 RETRY_DELAY_MAX = 30  # seconds
 
 # Alternative models to try if the primary one fails
+# Mix of free and cheap models for maximum reliability
 FALLBACK_MODELS = [
     LLM_MODEL,
     "qwen/qwen3-next-80b-a3b-instruct:free",
     "meta-llama/llama-3.3-70b-instruct:free",
-    "microsoft/phi-4:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "qwen/qwen-2.5-72b-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
+    "mistralai/mistral-7b-instruct:free",
+    # Cheap paid fallbacks (if user has their own key)
+    "qwen/qwen-2.5-72b-instruct",
+    "meta-llama/llama-3.3-70b-instruct",
 ]
 # Remove duplicates while preserving order
 FALLBACK_MODELS = list(dict.fromkeys(FALLBACK_MODELS))
@@ -49,15 +56,16 @@ async def suggest_activities(free_slots, lang="ru"):
 • Используй разные категории: спорт, учёба, творчество, уборка, прогулка, хобби, общение.
 • НЕ повторяй категории. НЕ предлагай только отдых и медитацию.
 • Описание должно быть привязано именно к этому временному окну.
+• Выбирай стикеры под тему
 
 Оформи ответ СТРОГО в таком формате для каждого периода:
 
-⏰ *Период: 09:00-11:30*
+⏰ 09:00-11:30
 🎯 Идея: [название идеи]
 📂 Категория: [категория]
 📝 Описание: [1-2 предложения, почему это подходит именно для этого времени]
 
-⏰ *Период: 14:00-16:00*
+⏰ 14:00-16:00
 🎯 Идея: [название идеи]
 📂 Категория: [категория]
 📝 Описание: [1-2 предложения, почему это подходит именно для этого времени]
@@ -80,16 +88,18 @@ RULES:
 • Consider time: morning (5-12) = active, afternoon (12-17) = productive, evening (17-22) = calm/relaxation, night (22-5) = quiet/wind-down.
 • Use different categories: sport, study, creativity, chores, walk, hobby, social.
 • Do NOT repeat categories. Do NOT only suggest rest and meditation.
-• Description should be tied to this specific time window.
+• Description should be tied to this specific time window
+• Choose stickers according to the theme
+
 
 Format the response STRICTLY like this for each period:
 
-⏰ *Period: 09:00-11:30*
+⏰ 09:00-11:30
 🎯 Idea: [idea name]
 📂 Category: [category]
 📝 Description: [1-2 sentences, why this fits this specific time]
 
-⏰ *Period: 14:00-16:00*
+⏰ 14:00-16:00
 🎯 Idea: [idea name]
 📂 Category: [category]
 📝 Description: [1-2 sentences, why this fits this specific time]
