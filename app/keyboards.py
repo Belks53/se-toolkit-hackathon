@@ -16,9 +16,9 @@ All keyboards support Russian and English localization.
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Day names in Russian and English with their numeric indices (0=Mon, 6=Sun)
-DAYS_RU = [("Пн", 0), ("Вт", 1), ("Ср", 2), ("Чт", 3), ("Пт", 4), ("Сб", 5), ("Вс", 6)]
-DAYS_MAP_RU = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-DAYS_MAP_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+days = [("Пн", 0), ("Вт", 1), ("Ср", 2), ("Чт", 3), ("Пт", 4), ("Сб", 5), ("Вс", 6)]
+days_map = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+days_en = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 
 def day_names(lang):
@@ -31,7 +31,7 @@ def day_names(lang):
     Returns:
         List of 7 day name strings.
     """
-    return DAYS_MAP_RU if lang == "ru" else DAYS_MAP_EN
+    return days_map if lang == "ru" else days_en
 
 
 def one_day_kb(lang="ru"):
@@ -47,7 +47,7 @@ def one_day_kb(lang="ru"):
     """
     kb = []
     row = []
-    for (name, day), en_name in zip(DAYS_RU, DAYS_MAP_EN):
+    for (name, day), en_name in zip(days, days_en):
         label = name if lang == "ru" else en_name
         row.append(InlineKeyboardButton(text=label, callback_data=f"oday_{day}"))
         if len(row) == 3:
@@ -326,7 +326,3 @@ def tz_kb(lang="ru"):
         kb.append(row)
     kb.append([InlineKeyboardButton(text=back_text, callback_data="back_from_tz")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
-
-
-# Backward-compatible aliases for bot.py
-days_map = DAYS_MAP_RU
