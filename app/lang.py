@@ -365,17 +365,67 @@ FALLBACK_NIGHT_EN = [
 ]
 
 def get_fallback_messages(period, lang="ru"):
-    """Get 15 random fallback messages for a time period"""
+    """Get random fallback message for a time period"""
     period_map = {
         "morning": (FALLBACK_MORNING_RU, FALLBACK_MORNING_EN),
         "afternoon": (FALLBACK_AFTERNOON_RU, FALLBACK_AFTERNOON_EN),
         "evening": (FALLBACK_EVENING_RU, FALLBACK_EVENING_EN),
         "night": (FALLBACK_NIGHT_RU, FALLBACK_NIGHT_EN),
     }
-    
+
     if period not in period_map:
         period = "afternoon"
-    
+
     ru_msgs, en_msgs = period_map[period]
     msgs = ru_msgs if lang == "ru" else en_msgs
     return random.choice(msgs)
+
+
+def get_fallback_for_slots(free_slots, lang="ru"):
+    """
+    Generate fallback messages for each free slot.
+    free_slots — список строк вида ["09:00-11:30", "14:00-16:00"]
+    Возвращает словарь {slot: message}
+    """
+    # Определяем период для каждого слота
+    def get_period_for_slot(slot):
+        try:
+            start_str = slot.split("-")[0]
+            hour = int(start_str.split(":")[0])
+            if 5 <= hour < 12:
+                return "morning"
+            elif 12 <= hour < 17:
+                return "afternoon"
+            elif 17 <= hour < 22:
+                return "evening"
+            else:
+                return "night"
+        except:
+            return "afternoon"
+
+    result = {}
+    used_messages = set()
+
+    for slot in free_slots:
+        period = get_period_for_slot(slot)
+        period_map = {
+            "morning": (FALLBACK_MORNING_RU, FALLBACK_MORNING_EN),
+            "afternoon": (FALLBACK_AFTERNOON_RU, FALLBACK_AFTERNOON_EN),
+            "evening": (FALLBACK_EVENING_RU, FALLBACK_EVENING_EN),
+            "night": (FALLBACK_NIGHT_RU, FALLBACK_NIGHT_EN),
+        }
+
+        ru_msgs, en_msgs = period_map.get(period, period_map["afternoon"])
+        msgs = ru_msgs if lang == "ru" else en_msgs
+
+        # Выбираем случайное сообщение, стараясь не повторяться
+        available = [m for m in msgs if m not in used_messages]
+        if not available:
+            available = msgs  # Если все использованы, сбрасываем
+            used_messages = set()
+
+        msg = random.choice(available)
+        used_messages.add(msg)
+        result[slot] = msg
+
+    return result

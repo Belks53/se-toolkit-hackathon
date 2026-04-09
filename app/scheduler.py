@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, time
 from llm import suggest_activities
-from lang import get, get_fallback_messages
+from lang import get, get_fallback_messages, get_fallback_for_slots
 import logging
 from pytz import utc
 
@@ -48,8 +48,6 @@ async def notify_user(user_id, notif_time, bot, db):
     free=find_free(busy)
 
     text = get(lang, "free_time") + "\n"
-    for slot in free:
-        text += f"\n⏰ <b>{slot}</b>\n"
 
     # One LLM call for all slots at once
     try:
@@ -57,20 +55,10 @@ async def notify_user(user_id, notif_time, bot, db):
         text += f"\n💡 {ideas}\n"
     except Exception as e:
         logger.error(f"LLM error: {e}")
-        # Use fallback messages based on time of day
-        current_hour = now.hour
-        if 5 <= current_hour < 12:
-            period = "morning"
-        elif 12 <= current_hour < 17:
-            period = "afternoon"
-        elif 17 <= current_hour < 22:
-            period = "evening"
-        else:
-            period = "night"
-        logger.info(f"Using fallback message for period: {period}")
-
-        fallback_msg = get_fallback_messages(period, lang)
-        text += f"\n💡 {fallback_msg}\n"
+        # Use fallback messages for each slot based on its time period
+        fallback_map = get_fallback_for_slots(free, lang)
+        for slot, msg in fallback_map.items():
+            text += f"\n⏰ <b>{slot}</b>\n💡 {msg}\n"
 
     await bot.send_message(user_id, text, parse_mode="HTML")
     logger.info(f"Notification sent to user {user_id}")

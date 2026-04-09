@@ -27,29 +27,42 @@ FALLBACK_MODELS = [
 FALLBACK_MODELS = list(dict.fromkeys(FALLBACK_MODELS))
 
 async def suggest_activities(free_slots, lang="ru"):
+    """
+    free_slots — строка вида:
+        09:00-11:30
+        14:00-16:00
+        18:30-22:00
+    Для каждого периода генерируется отдельная идея.
+    """
     prompts = {
         "ru": f"""
 Ты — помощник, который помогает планировать свободное время.
 
-Свободное время пользователя: {free_slots}
+У пользователя есть следующие СВОБОДНЫЕ ПЕРИОДЫ:
+{free_slots}
 
-Предложи 5 РАЗНЫХ идей из разных категорий: спорт, учёба, творчество, уборка, прогулка, хобби, общение.
-Учитывай время суток — утром активное, днём рабочее, вечером спокойное.
-НЕ повторяй одно и то же. НЕ предлагай только отдых и медитацию.
+Для КАЖДОГО из этих периодов предложи ОДНУ конкретную идею.
+Всего идей = количеству периодов.
 
-Оформи ответ КРАСИВО в следующем формате:
+ПРАВИЛА:
+• Учитывай время: утром (5-12) — активное, днём (12-17) — рабочее/продуктивное, вечером (17-22) — спокойное/расслабление, ночью (22-5) — тихое/подготовка ко сну.
+• Используй разные категории: спорт, учёба, творчество, уборка, прогулка, хобби, общение.
+• НЕ повторяй категории. НЕ предлагай только отдых и медитацию.
+• Описание должно быть привязано именно к этому временному окну.
 
-🎯 *Идея 1*
+Оформи ответ СТРОГО в таком формате для каждого периода:
+
+⏰ *Период: 09:00-11:30*
+🎯 Идея: [название идеи]
 📂 Категория: [категория]
-⏰ Время: [подходящее время]
-📝 Описание: [краткое описание, 1-2 предложения]
+📝 Описание: [1-2 предложения, почему это подходит именно для этого времени]
 
-🎯 *Идея 2*
+⏰ *Период: 14:00-16:00*
+🎯 Идея: [название идеи]
 📂 Категория: [категория]
-⏰ Время: [подходящее время]
-📝 Описание: [краткое описание, 1-2 предложения]
+📝 Описание: [1-2 предложения, почему это подходит именно для этого времени]
 
-...и так далее для всех 5 идей.
+...и так для каждого периода.
 
 В конце добавь короткую мотивирующую фразу.
 Отвечай на русском языке.
@@ -57,25 +70,31 @@ async def suggest_activities(free_slots, lang="ru"):
         "en": f"""
 You are an assistant that helps plan free time.
 
-User's free time: {free_slots}
+The user has the following FREE PERIODS:
+{free_slots}
 
-Suggest 5 DIVERSE ideas from different categories: sport, study, creativity, chores, walk, hobby, social.
-Consider time of day — morning = active, afternoon = productive, evening = calm.
-Do NOT repeat. Do NOT only suggest rest and meditation.
+For EACH of these periods suggest ONE specific idea.
+Total ideas = number of periods.
 
-Format the response BEAUTIFULLY as follows:
+RULES:
+• Consider time: morning (5-12) = active, afternoon (12-17) = productive, evening (17-22) = calm/relaxation, night (22-5) = quiet/wind-down.
+• Use different categories: sport, study, creativity, chores, walk, hobby, social.
+• Do NOT repeat categories. Do NOT only suggest rest and meditation.
+• Description should be tied to this specific time window.
 
-🎯 *Idea 1*
+Format the response STRICTLY like this for each period:
+
+⏰ *Period: 09:00-11:30*
+🎯 Idea: [idea name]
 📂 Category: [category]
-⏰ Time: [suitable time]
-📝 Description: [brief description, 1-2 sentences]
+📝 Description: [1-2 sentences, why this fits this specific time]
 
-🎯 *Idea 2*
+⏰ *Period: 14:00-16:00*
+🎯 Idea: [idea name]
 📂 Category: [category]
-⏰ Time: [suitable time]
-📝 Description: [brief description, 1-2 sentences]
+📝 Description: [1-2 sentences, why this fits this specific time]
 
-...and so on for all 5 ideas.
+...and so on for each period.
 
 At the end, add a short motivational phrase.
 Respond in English.
