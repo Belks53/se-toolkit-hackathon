@@ -120,7 +120,7 @@ class Database:
 
     async def get_users(self):
         async with self.pool.acquire() as conn:
-            return await conn.fetch("SELECT id, notification_time FROM users")
+            return await conn.fetch("SELECT id, notification_time, language, timezone FROM users")
 
     async def get_busy_for_day(self, user_id, day):
         async with self.pool.acquire() as conn:

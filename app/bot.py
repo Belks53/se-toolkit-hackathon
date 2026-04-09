@@ -483,8 +483,29 @@ async def set_tz(cb: CallbackQuery, state: FSMContext):
         kb = make_persistent_kb(lang)
         await cb.message.answer(text, reply_markup=kb, parse_mode="HTML")
     else:
+        # Regular timezone change - update DB and reschedule job
         lang = await get_lang(cb.from_user.id)
         await db.set_timezone(cb.from_user.id, tz)
+        
+        # Reschedule notification with new timezone
+        notif_time = await db.get_notification_time(cb.from_user.id)
+        if notif_time and scheduler.sch:
+            job_id = f"notif_{cb.from_user.id}"
+            try:
+                scheduler.sch.remove_job(job_id)
+            except:
+                pass
+            try:
+                import pytz
+                tz_obj = pytz.timezone(tz)
+            except:
+                tz_obj = pytz.utc
+            scheduler.sch.add_job(notify_user, "cron", hour=notif_time.hour, minute=notif_time.minute,
+                        timezone=tz_obj,
+                        args=[cb.from_user.id, notif_time, bot, db],
+                        id=job_id, replace_existing=True)
+            logger.info(f"Rescheduled user {cb.from_user.id} to {tz}")
+        
         await cb.answer(get(lang, "tz_set").format(tz=tz))
         await state.clear()
         text = make_menu_text(lang)

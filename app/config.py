@@ -8,3 +8,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# LLM Model configuration
+# Primary model to use (first in fallback list)
+LLM_MODEL = os.getenv("LLM_MODEL", "google/gemma-4-26b-a4b-it:free")
