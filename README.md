@@ -57,7 +57,8 @@ Time Manager is a Telegram bot that analyzes your schedule, automatically identi
 - Timezone support (20+ presets including Moscow, UTC, US cities)
 - Bilingual interface — Russian and English
 - AI-powered activity suggestions for free time (Qwen LLM via OpenRouter)
-- **Smart Fallback System** — 15 pre-written messages per time period (morning, afternoon, evening, night) when LLM is unavailable
+- **Multi-Provider LLM Fallback** — Tries OpenRouter free models first, then Mistral AI as backup
+- **Smart Fallback System** — 30 pre-written messages per time period (morning, afternoon, evening, night) when LLM is unavailable
 - Persistent keyboard with quick-access buttons
 - Help system with detailed instructions
 
@@ -151,6 +152,8 @@ nano .env
 |----------|-------------|
 | `BOT_TOKEN` | Telegram bot token (from @BotFather) |
 | `OPENAI_API_KEY` | OpenRouter API key (from https://openrouter.ai/) |
+| `MISTRAL_API_KEY` | Mistral AI API key — optional backup (from https://console.mistral.ai/) |
+| `LLM_MODEL` | Primary OpenRouter model (default: `google/gemma-4-26b-a4b-it:free`) |
 | `DB_HOST` | PostgreSQL host (use `db` for Docker Compose) |
 | `DB_USER` | Database username (default: `postgres`) |
 | `DB_PASSWORD` | Database password (default: `password`) |
@@ -222,5 +225,5 @@ se-toolkit-hackathon/
 - **Bot Framework:** aiogram 3.x
 - **Database:** PostgreSQL with asyncpg
 - **Scheduler:** APScheduler
-- **AI/LLM:** Qwen via OpenRouter API
+- **AI/LLM:** OpenRouter (Qwen, Llama, Gemma) + Mistral AI backup
 - **Deployment:** Docker & Docker Compose

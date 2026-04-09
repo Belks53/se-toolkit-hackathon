@@ -1,3 +1,16 @@
+"""
+Localization and Fallback Messages Module
+==========================================
+Contains all user-facing text strings in Russian and English.
+
+Structure:
+- T: Translation dictionary with keys for every UI message
+- FALLBACK_* lists: Pre-written activity suggestions (30 each per time period)
+- get(): Translation lookup function with fallback to Russian
+- get_fallback_messages(): Random suggestion for a single time period
+- get_fallback_for_slots(): Unique suggestions for each free slot
+"""
+
 T = {
     "ru": {
         "menu_title": "⏰ <b>Time Manager</b>",
@@ -96,6 +109,17 @@ T = {
 }
 
 def get(user_lang, key):
+    """
+    Look up a translation string for the given language and key.
+    Falls back to Russian if the language or key is missing.
+
+    Args:
+        user_lang: Language code ("ru" or "en").
+        key: Translation key from the T dictionary.
+
+    Returns:
+        Translated string, or the key itself if not found.
+    """
     return T.get(user_lang, T["ru"]).get(key, T["ru"].get(key, key))
 
 import random

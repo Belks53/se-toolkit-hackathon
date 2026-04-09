@@ -3,3 +3,4 @@ asyncpg
 apscheduler
 openai
 pytz
+mistralai
